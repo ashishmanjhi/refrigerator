@@ -7,11 +7,11 @@ package com.refrigerator.model;
 public class Item {
 
 	// Item id.
-	int id;
+	private int id;
 	// The name of the item . ex : Apple.
-	String name;
+	private String name;
 	// The space which the item uses in cubic centimeters.
-	double capacity;
+	private double capacity;
 
 	/**
 	 * Default constructor/

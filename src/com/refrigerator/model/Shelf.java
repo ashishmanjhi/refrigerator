@@ -10,10 +10,10 @@ import java.util.List;
 public class Shelf {
 
 	// Shelf id
-	int id;
+	private int id;
 
 	// Shelf remaining capacity in cubic centimeters
-	double remainingCapacity;
+	private double remainingCapacity;
 
 	// list of items inside the shelf eg:-apple,mango.
 	List<Item> items = new ArrayList<Item>();

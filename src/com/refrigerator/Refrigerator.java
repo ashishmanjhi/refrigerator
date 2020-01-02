@@ -3,9 +3,11 @@ package com.refrigerator;
 import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.DoubleSummaryStatistics;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
+import java.util.stream.Collector;
 import java.util.stream.Collectors;
-
 import com.refrigerator.exception.ItemNotFoundException;
 import com.refrigerator.exception.NotEnoughSpaceException;
 import com.refrigerator.model.Item;
@@ -147,22 +149,63 @@ public class Refrigerator {
 	 * @return Item the item if available.
 	 * @throws Exception Item Not Found
 	 */
+
 	public Item getItemById(int itemId) throws ItemNotFoundException {
 
-		// TODO use streams to accomplish the same.
-		// TODO use Maps to identify the shelf of a given item to improve the look up.
+		/*
+		 * Using Maps and Stream
+		 */
+
+
+		// Map with Key as itemId and value as shelf
+		Map<Integer,Shelf> map=new HashMap<Integer, Shelf>();
 		for (Shelf shelf : getShelves()) {
 			List<Item> itemList = shelf.getItems();
 			for (Item item : itemList) {
-				if (item.getId() == itemId) {
-					shelf.setRemainingCapacity(shelf.getRemainingCapacity() + item.getCapacity());
-					itemList.remove(item);
-					return item;
-				}
+				map.put(item.getId(), shelf);
 			}
-
 		}
-		throw new ItemNotFoundException(itemId);
+
+		/*
+		 * Collecting the item requested by the User by using ItemId and storing in a List.
+		 */
+		List<Item> itemToBeRemoved=getShelves().stream().flatMap(s->s.getItems().stream()).filter(i->i.getId()==itemId).collect(Collectors.toList());
+
+		/*
+		 * This shelf contain the shelf details in which the requested item is present.
+		 */
+		Shelf shelf=map.get(itemToBeRemoved.get(0).getId());
+
+		//Updating the shelf capacity i.e increasing it acc. to item capacity.
+		shelf.setRemainingCapacity(shelf.getRemainingCapacity()+itemToBeRemoved.get(0).getCapacity());
+
+		//Removing the item from the shelf.
+		shelf.getItems().remove(itemToBeRemoved.get(0));
+
+		/*
+		 * When the item requested is not present in the refrigerator it will throw ItemNotFoundException.
+		 */
+		if(itemToBeRemoved.isEmpty())
+			throw new ItemNotFoundException(itemId);
+
+		return itemToBeRemoved.get(0);
+
+
+
+		// TODO use streams to accomplish the same.
+		//		// TODO use Maps to identify the shelf of a given item to improve the look up.
+		//		for (Shelf shelf : getShelves()) {
+		//			List<Item> itemList = shelf.getItems();
+		//			for (Item item : itemList) {
+		//				if (item.getId() == itemId) {
+		//					shelf.setRemainingCapacity(shelf.getRemainingCapacity() + item.getCapacity());
+		//					itemList.remove(item);
+		//					return item;
+		//				}
+		//			}
+		//
+		//		}
+		//		throw new ItemNotFoundException(itemId);
 
 	}
 
@@ -173,22 +216,79 @@ public class Refrigerator {
 	 * @return iIf items match by name, return them else return empty list.
 	 */
 	public List<Item> getItemsByName(String itemName) {
-		// TODO use streams to accomplish the same.
-		// TODO use Maps to identify the shelf of a given item to improve the look up.
-		List<Item> itemRemoved = new ArrayList<Item>();
+
+		/*
+		 * 
+		 * Alternate Way of getting items from the refrigerator Using Maps and Streams
+		 * 
+		 */
+		
+		// Map with Key as itemId and value as shelf
+		Map<Integer,Shelf> map=new HashMap<Integer, Shelf>();
 		for (Shelf shelf : getShelves()) {
-			// Temp iterator to avoid concurrent modification.
-			List<Item> tempIterator = new ArrayList<Item>(shelf.getItems());
-			for (Item item : tempIterator) {
-				if (item.getName().equals(itemName)) {
-					itemRemoved.add(item);
-					shelf.setRemainingCapacity(shelf.getRemainingCapacity() + item.getCapacity());
-					shelf.getItems().remove(item);
-				}
+			List<Item> itemList = shelf.getItems();
+			for (Item item : itemList) {
+				map.put(item.getId(), shelf);
 			}
 		}
 
-		return itemRemoved;
+		/*
+		 * Collecting the items requested by the User by using ItemName and storing in a List to be removed.
+		 */
+		List<Item> itemToBeRemoved=getShelves().stream().flatMap(s->s.getItems().stream()).filter(i->i.getName()==itemName).collect(Collectors.toList());
+
+		// No of items collected or matched with item name.
+		int no=itemToBeRemoved.size()-1;
+
+		// Removing Items one by one 
+		while(no>=0)
+		{
+			/*
+			 * This shelf contain the shelf details in which the requested item is present.
+			 */
+			Shelf shelf=map.get(itemToBeRemoved.get(no).getId());
+
+			//Updating the shelf capacity i.e increasing it acc. to item capacity.
+			shelf.setRemainingCapacity(shelf.getRemainingCapacity()+itemToBeRemoved.get(no).getCapacity());
+
+			//Removing the item from the shelf.
+			shelf.getItems().remove(itemToBeRemoved.get(no));
+
+			// For count
+			no--;
+		}
+		/*
+		 * When the item requested is not present in the refrigerator it will throw ItemNotFoundException.
+		 */
+		if(itemToBeRemoved.isEmpty())
+			throw new ItemNotFoundException(itemName);
+
+
+		return itemToBeRemoved;
+
+
+
+
+
+		// TODO use streams to accomplish the same.
+		//TODO use Maps to identify the shelf of a given item to improve the look up.
+		//		List<Item> itemRemoved = new ArrayList<Item>();
+		//		for (Shelf shelf : getShelves()) {
+		//			// Temp iterator to avoid concurrent modification.
+		//			List<Item> tempIterator = new ArrayList<Item>(shelf.getItems());
+		//			for (Item item : tempIterator) {
+		//				if (item.getName().equals(itemName)) {
+		//					itemRemoved.add(item);
+		//					shelf.setRemainingCapacity(shelf.getRemainingCapacity() + item.getCapacity());
+		//					shelf.getItems().remove(item);
+		//				}
+		//			}
+		//		}
+		//		
+		//	if(itemRemoved.isEmpty())
+		//         throw new ItemNotFoundException(itemName);
+		//	
+		//	return itemRemoved;
 	}
 
 	@Override

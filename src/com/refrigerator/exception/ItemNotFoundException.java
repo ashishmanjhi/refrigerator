@@ -16,4 +16,8 @@ public class ItemNotFoundException extends RefrigeratorException {
 		super(String.format("Item with ID : %d cannot be found ", itemId));
 	}
 
+	public ItemNotFoundException(String itemName) {
+		super(String.format("Item with Name : %s cannot be found ", itemName));
+	}
+
 }
