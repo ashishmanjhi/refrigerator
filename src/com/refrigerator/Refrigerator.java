@@ -6,7 +6,6 @@ import java.util.DoubleSummaryStatistics;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.stream.Collector;
 import java.util.stream.Collectors;
 import com.refrigerator.exception.ItemNotFoundException;
 import com.refrigerator.exception.NotEnoughSpaceException;
@@ -155,22 +154,19 @@ public class Refrigerator {
 		/*
 		 * Using Maps and Stream
 		 */
-
-
-		// Map with Key as itemId and value as shelf
-		Map<Integer,Shelf> map=new HashMap<Integer, Shelf>();
-		for (Shelf shelf : getShelves()) {
-			List<Item> itemList = shelf.getItems();
-			for (Item item : itemList) {
-				map.put(item.getId(), shelf);
-			}
-		}
+		Map<Integer,Shelf> map=getmap();
 
 		/*
 		 * Collecting the item requested by the User by using ItemId and storing in a List.
 		 */
 		List<Item> itemToBeRemoved=getShelves().stream().flatMap(s->s.getItems().stream()).filter(i->i.getId()==itemId).collect(Collectors.toList());
 
+		/*
+		 * When the item requested is not present in the refrigerator it will throw ItemNotFoundException.
+		 */
+		if(itemToBeRemoved.isEmpty())
+			throw new ItemNotFoundException(itemId);
+		
 		/*
 		 * This shelf contain the shelf details in which the requested item is present.
 		 */
@@ -182,11 +178,7 @@ public class Refrigerator {
 		//Removing the item from the shelf.
 		shelf.getItems().remove(itemToBeRemoved.get(0));
 
-		/*
-		 * When the item requested is not present in the refrigerator it will throw ItemNotFoundException.
-		 */
-		if(itemToBeRemoved.isEmpty())
-			throw new ItemNotFoundException(itemId);
+		
 
 		return itemToBeRemoved.get(0);
 
@@ -209,6 +201,8 @@ public class Refrigerator {
 
 	}
 
+
+
 	/**
 	 * Get items from the shelves by item name.
 	 * 
@@ -222,15 +216,8 @@ public class Refrigerator {
 		 * Alternate Way of getting items from the refrigerator Using Maps and Streams
 		 * 
 		 */
-		
-		// Map with Key as itemId and value as shelf
-		Map<Integer,Shelf> map=new HashMap<Integer, Shelf>();
-		for (Shelf shelf : getShelves()) {
-			List<Item> itemList = shelf.getItems();
-			for (Item item : itemList) {
-				map.put(item.getId(), shelf);
-			}
-		}
+
+		Map<Integer,Shelf> map=getmap();
 
 		/*
 		 * Collecting the items requested by the User by using ItemName and storing in a List to be removed.
@@ -291,6 +278,23 @@ public class Refrigerator {
 		//	return itemRemoved;
 	}
 
+	
+	/**
+	 * Map function to map itemId to shelves.
+	 * @return Map<ItemId,Shelf>
+	 */
+	private Map<Integer, Shelf> getmap() {
+		Map<Integer,Shelf> map=new HashMap<Integer, Shelf>();
+		for (Shelf shelf : getShelves()) {
+			List<Item> itemList = shelf.getItems();
+			for (Item item : itemList) {
+				map.put(item.getId(), shelf);
+			}
+		}
+		return map;
+	}
+
+	
 	@Override
 	public String toString() {
 		return "Refrigerator [shelves=" + getShelves() + ", maxNoOfShelves=" + getShelves().size() + "]";
