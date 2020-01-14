@@ -185,7 +185,7 @@ public class Refrigerator {
 
 
 		// TODO use streams to accomplish the same.
-		//		// TODO use Maps to identify the shelf of a given item to improve the look up.
+    	// TODO use Maps to identify the shelf of a given item to improve the look up.
 		//		for (Shelf shelf : getShelves()) {
 		//			List<Item> itemList = shelf.getItems();
 		//			for (Item item : itemList) {
@@ -224,6 +224,12 @@ public class Refrigerator {
 		 */
 		List<Item> itemToBeRemoved=getShelves().stream().flatMap(s->s.getItems().stream()).filter(i->i.getName()==itemName).collect(Collectors.toList());
 
+		/*
+		 * When the item requested is not present in the refrigerator it will throw ItemNotFoundException.
+		 */
+		if(itemToBeRemoved.isEmpty())
+			throw new ItemNotFoundException(itemName);
+		
 		// No of items collected or matched with item name.
 		int no=itemToBeRemoved.size()-1;
 
@@ -244,11 +250,8 @@ public class Refrigerator {
 			// For count
 			no--;
 		}
-		/*
-		 * When the item requested is not present in the refrigerator it will throw ItemNotFoundException.
-		 */
-		if(itemToBeRemoved.isEmpty())
-			throw new ItemNotFoundException(itemName);
+		
+		
 
 
 		return itemToBeRemoved;
